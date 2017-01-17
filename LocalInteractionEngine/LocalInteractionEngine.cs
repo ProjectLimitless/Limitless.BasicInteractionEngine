@@ -15,6 +15,7 @@ using System;
 
 using Limitless.Runtime.Types;
 using Limitless.Runtime.Interfaces;
+using System.Collections.Generic;
 
 namespace Limitless.LocalInteractionEngine
 {
@@ -58,7 +59,7 @@ namespace Limitless.LocalInteractionEngine
             throw new NotImplementedException();
         }
 
-        public void ListSkills()
+        public List<dynamic> ListSkills()
         {
             throw new NotImplementedException();
         }
