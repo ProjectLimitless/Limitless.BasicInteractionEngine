@@ -12,10 +12,12 @@
 */
 
 using System;
+using System.Reflection;
+using System.Collections.Generic;
 
 using Limitless.Runtime.Types;
 using Limitless.Runtime.Interfaces;
-using System.Collections.Generic;
+using Limitless.Runtime.Interactions;
 
 namespace Limitless.BasicInteractionEngine
 {
@@ -26,37 +28,72 @@ namespace Limitless.BasicInteractionEngine
     {
         public void Configure(dynamic settings)
         {
-            throw new NotImplementedException();
+            // Nothing to do here yet
         }
 
         public void DeregisterSkill()
         {
             throw new NotImplementedException();
         }
-
-        public string GetAuthor()
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public Type GetConfigurationType()
         {
             return typeof(BasicInteractionEngineConfig);
         }
 
-        public string GetDescription()
-        {
-            throw new NotImplementedException();
-        }
-
+        /// <summary>
+        /// Implemented from interface 
+        /// <see cref="Limitless.Runtime.Interface.IModule.GetTitle"/>
+        /// </summary>
         public string GetTitle()
         {
-            throw new NotImplementedException();
+            var assembly = GetType().Assembly;
+            var attribute = assembly.GetCustomAttribute<AssemblyTitleAttribute>();
+            if (attribute != null)
+            {
+                return attribute.Title;
+            }
+            return "Unknown";
         }
 
+        /// <summary>
+        /// Implemented from interface 
+        /// <see cref="Limitless.Runtime.Interface.IModule.GetAuthor"/>
+        /// </summary>
+        public string GetAuthor()
+        {
+            var assembly = GetType().Assembly;
+            var attribute = assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
+            if (attribute != null)
+            {
+                return attribute.Company;
+            }
+            return "Unknown";
+        }
+
+        /// <summary>
+        /// Implemented from interface 
+        /// <see cref="Limitless.Runtime.Interface.IModule.GetVersion"/>
+        /// </summary>
         public string GetVersion()
         {
-            throw new NotImplementedException();
+            var assembly = GetType().Assembly;
+            return assembly.GetName().Version.ToString();
+        }
+
+        /// <summary>
+        /// Implemented from interface 
+        /// <see cref="Limitless.Runtime.Interface.IModule.GetDescription"/>
+        /// </summary>
+        public string GetDescription()
+        {
+            var assembly = GetType().Assembly;
+            var attribute = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>();
+            if (attribute != null)
+            {
+                return attribute.Description;
+            }
+            return "Unknown";
         }
 
         public List<dynamic> ListSkills()
@@ -69,9 +106,9 @@ namespace Limitless.BasicInteractionEngine
             throw new NotImplementedException();
         }
 
-        public void RegisterSkill()
+        public bool RegisterSkill(Skill skill)
         {
-            throw new NotImplementedException();
+            return true;
         }
     }
 }

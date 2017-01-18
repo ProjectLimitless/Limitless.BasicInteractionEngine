@@ -13,7 +13,7 @@
 
 using System;
 
-namespace Limitless.LocalInteractionEngine
+namespace Limitless.BasicInteractionEngine
 {
     /// <summary>
     /// Basic interaction engine configuration.
