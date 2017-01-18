@@ -17,12 +17,12 @@ using Limitless.Runtime.Types;
 using Limitless.Runtime.Interfaces;
 using System.Collections.Generic;
 
-namespace Limitless.LocalInteractionEngine
+namespace Limitless.BasicInteractionEngine
 {
     /// <summary>
-    /// An Interaction Engine that only operates locally.
+    /// A Basic Interaction Engine for Project Limitless.
     /// </summary>
-    public class LocalInteractionEngine : IModule, IInteractionEngine
+    public class BasicInteractionEngine : IModule, IInteractionEngine
     {
         public void Configure(dynamic settings)
         {
@@ -41,7 +41,7 @@ namespace Limitless.LocalInteractionEngine
 
         public Type GetConfigurationType()
         {
-            return typeof(LocalInteractionEngineConfig);
+            return typeof(BasicInteractionEngineConfig);
         }
 
         public string GetDescription()

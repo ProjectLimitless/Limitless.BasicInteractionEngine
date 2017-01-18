@@ -7,8 +7,8 @@
     <ProjectGuid>{1F8D8D30-284D-4045-9B42-2185C2DD44EF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Limitless.LocalInteractionEngine</RootNamespace>
-    <AssemblyName>Limitless.LocalInteractionEngine</AssemblyName>
+    <RootNamespace>Limitless.BasicInteractionEngine</RootNamespace>
+    <AssemblyName>Limitless.BasicInteractionEngine</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,8 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LocalInteractionEngineConfig.cs" />
-    <Compile Include="LocalInteractionEngine.cs" />
+    <Compile Include="BasicInteractionEngineConfig.cs" />
+    <Compile Include="BasicInteractionEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

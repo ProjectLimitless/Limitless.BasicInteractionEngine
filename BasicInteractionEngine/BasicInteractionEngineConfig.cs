@@ -16,9 +16,9 @@ using System;
 namespace Limitless.LocalInteractionEngine
 {
     /// <summary>
-    /// Local interaction engine configuration.
+    /// Basic interaction engine configuration.
     /// </summary>
-    public class LocalInteractionEngineConfig
+    public class BasicInteractionEngineConfig
     {
         
     }

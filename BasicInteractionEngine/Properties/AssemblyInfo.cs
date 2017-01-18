@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Limitless.LocalInteractionEngine")]
-[assembly: AssemblyDescription("An Interaction Engine that only operates locally")]
+[assembly: AssemblyTitle("Limitless.BasicInteractionEngine")]
+[assembly: AssemblyDescription("A Basic Interaction Engine for Project Limitless")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Project Limitless")]
-[assembly: AssemblyProduct("Limitless.LocalInteractionEngine")]
+[assembly: AssemblyProduct("Limitless.BasicInteractionEngine")]
 [assembly: AssemblyCopyright("Copyright © Donovan Solms 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

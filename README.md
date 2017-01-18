@@ -1,10 +1,10 @@
-# Limitless.LocalInteractionEngine
+# Limitless.BasicInteractionEngine
 
-An Interaction Engine that only operates locally.
+A Basic Interaction Engine for Project Limitless.
 
 ## Documentation
 
-Available at the [Project Limitless Documentation site](https://docs.projectlimitless.io/local-interaction-engine).
+Available at the [Project Limitless Documentation site](https://docs.projectlimitless.io/basic-interaction-engine).
 
 ---
 *A part of Project Limitless*
