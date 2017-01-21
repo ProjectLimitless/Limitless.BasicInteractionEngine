@@ -1,6 +1,6 @@
 ﻿/** 
 * This file is part of Project Limitless.
-* Copyright © 2016 Donovan Solms.
+* Copyright © 2017 Donovan Solms.
 * Project Limitless
 * https://www.projectlimitless.io
 * 
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using Limitless.Runtime.Types;
 using Limitless.Runtime.Interfaces;
 using Limitless.Runtime.Interactions;
+using Limitless.Runtime.Enums;
 
 namespace Limitless.BasicInteractionEngine
 {
@@ -32,6 +33,10 @@ namespace Limitless.BasicInteractionEngine
         /// </summary>
         private ILogger _log;
         /// <summary>
+        /// The basic intent extractor.
+        /// </summary>
+        private IntentExtractor _extractor;
+        /// <summary>
         /// The registered skills.
         /// </summary>
         private Dictionary<string, Skill> _skills;
@@ -43,7 +48,7 @@ namespace Limitless.BasicInteractionEngine
         public BasicInteractionEngine(ILogger log)
         {
             _log = log;
-
+            _extractor = new IntentExtractor(_log);
             _skills = new Dictionary<string, Skill>();
         }
         
@@ -66,10 +71,23 @@ namespace Limitless.BasicInteractionEngine
             return typeof(BasicInteractionEngineConfig);
         }
         
-        // TODO
+        /// <summary>
+        /// Implemented from interface
+        /// <see cref="Limitless.Runtime.Interfaces.IInteractionEngine.ProcessInput(IOData)"/>
+        /// </summary>
         public IOData ProcessInput(IOData ioData)
         {
-            throw new NotImplementedException();
+            if (ioData.Mime == MimeType.Text)
+            {
+                _log.Info($"Processing text input");
+                string output = _extractor.Extract(ioData.Data, _skills);
+                // Different mime types
+                return new IOData(MimeType.Text, output);
+            }
+            else
+            {
+                throw new NotSupportedException($"The MIME type '{ioData.Mime}' is not supported by the BasicInteractionEngine");
+            }
         }
 
         /// <summary>
