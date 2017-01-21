@@ -45,7 +45,6 @@ namespace Limitless.BasicInteractionEngine
             _log = log;
 
             _skills = new Dictionary<string, Skill>();
-            _log.Info("Loaded engine");
         }
         
         /// <summary>
@@ -57,7 +56,11 @@ namespace Limitless.BasicInteractionEngine
             // Nothing to do here yet
         }
         
-        //TODO
+        /// <summary>
+        /// Implemented from interface
+        /// <see cref="Limitless.Runtime.Interfaces.IModule.GetConfigurationType"/>
+        /// </summary>
+        /// <returns></returns>
         public Type GetConfigurationType()
         {
             return typeof(BasicInteractionEngineConfig);
@@ -86,18 +89,28 @@ namespace Limitless.BasicInteractionEngine
 
         /// <summary>
         /// Implemented from interface 
+        /// <see cref="Limitless.Runtime.Interfaces.IInteractionEngine.DeregisterSkill(string)"/>
+        /// </summary>
+        public bool DeregisterSkill(string skillUUID)
+        {
+            // Remove the skill then check if it is still in the list
+            _skills.Remove(skillUUID);
+            if (_skills.ContainsKey(skillUUID))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Implemented from interface 
         /// <see cref="Limitless.Runtime.Interfaces.IInteractionEngine.ListSkills"/>
         /// </summary>
         public List<Skill> ListSkills()
         {
             return _skills.Values.ToList();
         }
-
-        public void DeregisterSkill()
-        {
-            throw new NotImplementedException();
-        }
-
+        
         /// <summary>
         /// Implemented from interface 
         /// <see cref="Limitless.Runtime.Interfaces.IModule.GetTitle"/>
