@@ -50,8 +50,28 @@ namespace Limitless.BasicInteractionEngine
             _log = log;
             _extractor = new IntentExtractor(_log);
             _skills = new Dictionary<string, Skill>();
+
+
+            var skill = new Skill();
+            skill.Name = "Builtin Weather Skill";
+            skill.Author = "Project Limitless";
+            skill.ShortDescription = "A skill to check the weather";
+            skill.Intent = new Intent();
+            skill.Intent.Actions.Add("what");
+            skill.Intent.Actions.Add("how");
+            skill.Intent.Targets.Add("weather");
+            skill.Intent.Targets.Add("forecast");
+            skill.Binding = SkillExecutorBinding.Network;
+            var executor = new NetworkExecutor();
+            executor.Url = "https://www.google.com";
+            executor.ValidateCertificate = false;
+            skill.Executor = executor;
+            skill.Help.Phrase = "weather";
+            skill.Help.ExamplePhrase = "How's the weather for tomorrow morning";
+            //skill.RequiredParameters.Add(new SkillParameter() { Parameter = "sugar", Type = SkillParameterType.Integer });
+            RegisterSkill(skill);
         }
-        
+
         /// <summary>
         /// Implemented from interface
         /// <see cref="Limitless.Runtime.Interfaces.IModule.Configure(dynamic)"/>
@@ -80,9 +100,31 @@ namespace Limitless.BasicInteractionEngine
             if (ioData.Mime == MimeType.Text)
             {
                 _log.Info($"Processing text input");
-                string output = _extractor.Extract(ioData.Data, _skills);
+
+                MatchedSkill matchedSkill = null;
+                try
+                {
+                    matchedSkill = _extractor.Extract(ioData.Data, _skills);
+                }
+                catch (NotSupportedException)
+                {
+                    // TODO: I need to know the skills matched
+                    // Multiple skills matched
+                    return new IOData(MimeType.Text, "Multile skills have been matched");
+                }
+                catch (InvalidOperationException)
+                {
+                    // No skill matched
+                    return new IOData(MimeType.Text, "No skill could be matched");
+                }
+
+                _log.Trace($"Executing using {matchedSkill.Skill.Binding} executor");
+                // TODO: matchedSkill needs to be sent to the executor, with the metadata
+                ((ISkillExecutor)matchedSkill.Skill.Executor).Execute(matchedSkill.Skill);
+                
+
                 // Different mime types
-                return new IOData(MimeType.Text, output);
+                return new IOData(MimeType.Text, "What");
             }
             else
             {

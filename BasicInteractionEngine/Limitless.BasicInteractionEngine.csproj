@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="BasicInteractionEngineConfig.cs" />
     <Compile Include="BasicInteractionEngine.cs" />
+    <Compile Include="MatchedSkill.cs" />
     <Compile Include="IntentExtractor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
