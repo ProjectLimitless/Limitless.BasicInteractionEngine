@@ -24,7 +24,7 @@ using Limitless.Runtime.Enums;
 namespace Limitless.BasicInteractionEngine
 {
     /// <summary>
-    /// A Basic Interaction Engine for Project Limitless.
+    /// A (Very) Basic Interaction Engine for Project Limitless.
     /// </summary>
     public class BasicInteractionEngine : IModule, IInteractionEngine
     {
@@ -51,7 +51,7 @@ namespace Limitless.BasicInteractionEngine
             _extractor = new IntentExtractor(_log);
             _skills = new Dictionary<string, Skill>();
 
-
+            // TODO: Test
             var skill = new Skill();
             skill.Name = "Builtin Weather Skill";
             skill.Author = "Project Limitless";
@@ -62,6 +62,7 @@ namespace Limitless.BasicInteractionEngine
             skill.Intent.Targets.Add("weather");
             skill.Intent.Targets.Add("forecast");
             skill.Binding = SkillExecutorBinding.Network;
+            skill.Parameters.Add(new SkillParameter("day", SkillParameterType.DateRange));
             var executor = new NetworkExecutor();
             executor.Url = "https://www.google.com";
             executor.ValidateCertificate = false;
@@ -101,15 +102,27 @@ namespace Limitless.BasicInteractionEngine
             {
                 _log.Info($"Processing text input");
 
-                MatchedSkill matchedSkill = null;
+                Actionable actionable = null;
                 try
                 {
-                    matchedSkill = _extractor.Extract(ioData.Data, _skills);
+                    actionable = _extractor.Extract(ioData.Data, _skills);
+
+                    // TODO: Check if required parameters are included for the matched skill - expand extract
+                    if (actionable.HasMissingParameters())
+                    {
+                        var missingParameters = actionable.GetMissingParameters();
+                        _log.Warning($"{missingParameters.Count} missing parameter(s) for skill '{actionable.Skill.Name}'");
+
+                        // TODO: Engine should ask for missing parameter
+                        return new IOData(MimeType.Text, $"I'm missing {missingParameters.Count} parameters");
+                    }
+
                 }
                 catch (NotSupportedException)
                 {
                     // TODO: I need to know the skills matched
                     // Multiple skills matched
+                    // HTTP status 300
                     return new IOData(MimeType.Text, "Multile skills have been matched");
                 }
                 catch (InvalidOperationException)
@@ -118,9 +131,9 @@ namespace Limitless.BasicInteractionEngine
                     return new IOData(MimeType.Text, "No skill could be matched");
                 }
 
-                _log.Trace($"Executing using {matchedSkill.Skill.Binding} executor");
+                _log.Trace($"Executing using {actionable.Skill.Binding} executor");
                 // TODO: matchedSkill needs to be sent to the executor, with the metadata
-                ((ISkillExecutor)matchedSkill.Skill.Executor).Execute(matchedSkill.Skill);
+                ((ISkillExecutor)actionable.Skill.Executor).Execute(actionable);
                 
 
                 // Different mime types

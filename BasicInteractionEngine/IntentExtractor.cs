@@ -12,11 +12,13 @@
 */
 
 using System;
+using System.Linq;
 using System.Dynamic;
 using System.Collections.Generic;
 
 using Chronic;
 
+using Limitless.Runtime.Enums;
 using Limitless.Runtime.Types;
 using Limitless.Runtime.Interfaces;
 using Limitless.Runtime.Interactions;
@@ -54,7 +56,7 @@ namespace Limitless.BasicInteractionEngine
         /// <param name="input">The input text</param>
         /// <param name="skills">The current active skills</param>
         /// <returns>The matched skill with metadata</returns>
-        public MatchedSkill Extract(string input, Dictionary<string, Skill> skills)
+        public Actionable Extract(string input, Dictionary<string, Skill> skills)
         {
             _log.Trace($"Extracting intent from '{input}'");
 
@@ -131,8 +133,23 @@ namespace Limitless.BasicInteractionEngine
                 _log.Info("No skill matched");
                 throw new InvalidOperationException("No skill matched");
             }
+
+            var actionable = new Actionable()
+            {
+                Skill = bestMatchedSkill.Skill,
+                Confidence = bestMatchedSkill.Confidence,
+            };
+
+            List<SkillParameter> dateParams = actionable.GetParametersByType(SkillParameterType.DateRange);
+            if (dateParams.Count > 0)
+            {
+                if (timeSpan != null)
+                {
+                    actionable.SkillParameters.Add(dateParams.First().Parameter, dateRange);
+                }
+            }
             
-            return new MatchedSkill(bestMatchedSkill.Skill, dateRange, bestMatchedSkill.Confidence);
+            return actionable;
         }
     }
 }
