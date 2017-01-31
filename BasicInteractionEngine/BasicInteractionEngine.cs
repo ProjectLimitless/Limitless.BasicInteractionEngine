@@ -91,14 +91,26 @@ namespace Limitless.BasicInteractionEngine
         {
             return typeof(BasicInteractionEngineConfig);
         }
-        
+
+        /// <summary>
+        /// Implemented from interface
+        /// <see cref="Limitless.Runtime.Interfaces.IInteractionEngine.ProcessInput(IOData)"/>
+        /// </summary>
+        public IEnumerable<SupportedIOCombination> GetSupportedIOCombinations()
+        {
+            // BasicInteractionEngine only supports English text input and output
+            return new List<SupportedIOCombination>(){
+                new SupportedIOCombination(new MimeLanguage(MimeType.Text, "en-US"), new MimeLanguage(MimeType.Text, "en-ZA"))
+            };
+        }
+
         /// <summary>
         /// Implemented from interface
         /// <see cref="Limitless.Runtime.Interfaces.IInteractionEngine.ProcessInput(IOData)"/>
         /// </summary>
         public IOData ProcessInput(IOData ioData)
         {
-            if (ioData.Mime == MimeType.Text)
+            if (ioData.MimeLanguage.Mime == MimeType.Text)
             {
                 _log.Info($"Processing text input");
 
@@ -114,7 +126,7 @@ namespace Limitless.BasicInteractionEngine
                         _log.Warning($"{missingParameters.Count} missing parameter(s) for skill '{actionable.Skill.Name}'");
 
                         // TODO: Engine should ask for missing parameter
-                        return new IOData(MimeType.Text, $"I'm missing {missingParameters.Count} parameters");
+                        return new IOData(new MimeLanguage(MimeType.Text, "en-ZA"), $"I'm missing {missingParameters.Count} parameters");
                     }
 
                 }
@@ -123,25 +135,25 @@ namespace Limitless.BasicInteractionEngine
                     // TODO: I need to know the skills matched
                     // Multiple skills matched
                     // HTTP status 300
-                    return new IOData(MimeType.Text, "Multile skills have been matched");
+                    return new IOData(new MimeLanguage(MimeType.Text, "en-ZA"), "Multile skills have been matched");
                 }
                 catch (InvalidOperationException)
                 {
                     // No skill matched
-                    return new IOData(MimeType.Text, "No skill could be matched");
+                    return new IOData(new MimeLanguage(MimeType.Text, "en-ZA"), "No skill could be matched");
                 }
 
                 _log.Trace($"Executing using {actionable.Skill.Binding} executor");
                 // TODO: matchedSkill needs to be sent to the executor, with the metadata
                 ((ISkillExecutor)actionable.Skill.Executor).Execute(actionable);
-                
+
 
                 // Different mime types
-                return new IOData(MimeType.Text, "What");
+                return new IOData(new MimeLanguage(MimeType.Text, "en-ZA"), "What now?");
             }
             else
             {
-                throw new NotSupportedException($"The MIME type '{ioData.Mime}' is not supported by the BasicInteractionEngine");
+                throw new NotSupportedException($"The MIME type '{ioData.MimeLanguage.Mime}' is not supported by the BasicInteractionEngine");
             }
         }
 
