@@ -100,7 +100,7 @@ namespace Limitless.BasicInteractionEngine
         {
             // BasicInteractionEngine only supports English text input and output
             return new List<SupportedIOCombination>(){
-                new SupportedIOCombination(new MimeLanguage(MimeType.Text, "en-US"), new MimeLanguage(MimeType.Text, "en-ZA"))
+                new SupportedIOCombination(new MimeLanguage(MimeType.Text, "en-US"), new MimeLanguage(MimeType.Text, "en-US"))
             };
         }
 
@@ -126,7 +126,7 @@ namespace Limitless.BasicInteractionEngine
                         _log.Warning($"{missingParameters.Count} missing parameter(s) for skill '{actionable.Skill.Name}'");
 
                         // TODO: Engine should ask for missing parameter
-                        return new IOData(new MimeLanguage(MimeType.Text, "en-ZA"), $"I'm missing {missingParameters.Count} parameters");
+                        return new IOData(new MimeLanguage(MimeType.Text, "en-US"), $"I'm missing {missingParameters.Count} parameters");
                     }
 
                 }
@@ -135,12 +135,12 @@ namespace Limitless.BasicInteractionEngine
                     // TODO: I need to know the skills matched
                     // Multiple skills matched
                     // HTTP status 300
-                    return new IOData(new MimeLanguage(MimeType.Text, "en-ZA"), "Multile skills have been matched");
+                    return new IOData(new MimeLanguage(MimeType.Text, "en-US"), "Multile skills have been matched");
                 }
                 catch (InvalidOperationException)
                 {
                     // No skill matched
-                    return new IOData(new MimeLanguage(MimeType.Text, "en-ZA"), "No skill could be matched");
+                    return new IOData(new MimeLanguage(MimeType.Text, "en-US"), "No skill could be matched");
                 }
 
                 _log.Trace($"Executing using {actionable.Skill.Binding} executor");
@@ -149,7 +149,7 @@ namespace Limitless.BasicInteractionEngine
 
 
                 // Different mime types
-                return new IOData(new MimeLanguage(MimeType.Text, "en-ZA"), "What now?");
+                return new IOData(new MimeLanguage(MimeType.Text, "en-US"), "What now?");
             }
             else
             {
