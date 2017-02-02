@@ -34,16 +34,17 @@ namespace Limitless.BasicInteractionEngine
         /// <summary>
         /// The logger.
         /// </summary>
-        private ILogger _log;
+        private readonly ILogger _log;
         /// <summary>
         /// The date/time parser.
         /// </summary>
-        private Parser _timeParser;
-        
+        private readonly Parser _timeParser;
+
         /// <summary>
-        /// Constructor with a logger.
+        /// Creates a new instance of the extractor using 
+        /// the supplied <see cref="ILogger"/>.
         /// </summary>
-        /// <param name="log">The logger to use</param>
+        /// <param name="log">The <see cref="ILogger"/> to use</param>
         public IntentExtractor(ILogger log)
         {
             _log = log;
@@ -91,50 +92,36 @@ namespace Limitless.BasicInteractionEngine
             {
                 var skill = kvp.Value;
                 var intent = skill.Intent;
-                int matchConfidence = 0;
-
-                foreach (string action in intent.Actions)
+                int matchConfidence = intent.Actions.Count(input.Contains);
+                matchConfidence += intent.Targets.Count(input.Contains);
+                
+                if (matchConfidence <= 0 || bestMatchedSkill.Skill != null)
                 {
-                    if (input.Contains(action))
+                    if (matchConfidence > bestMatchedSkill.Confidence)
                     {
-                        matchConfidence++;
+                        bestMatchedSkill.Skill = skill;
+                        bestMatchedSkill.Confidence = matchConfidence;
+                    }
+                    else if (matchConfidence == bestMatchedSkill.Confidence)
+                    {
+                        throw new NotSupportedException("Multiple skills matched");
                     }
                 }
-                foreach (string target in intent.Targets)
-                {
-                    if (input.Contains(target))
-                    {
-                        matchConfidence++;
-                    }
-                }
-
-                if (matchConfidence > 0 && bestMatchedSkill.Skill == null)
+                else
                 {
                     bestMatchedSkill.Skill = skill;
                     bestMatchedSkill.Confidence = matchConfidence;
-                }
-                else if (matchConfidence > bestMatchedSkill.Confidence)
-                {
-                    bestMatchedSkill.Skill = skill;
-                    bestMatchedSkill.Confidence = matchConfidence;
-                }
-                else if (matchConfidence == bestMatchedSkill.Confidence)
-                {
-                    throw new NotSupportedException("Multiple skills matched");
                 }
             }
             
-            if (bestMatchedSkill.Skill != null)
-            {
-                _log.Debug($"Matched Skill '{bestMatchedSkill.Skill.Name}' with confidence {bestMatchedSkill.Confidence}");
-            }
-            else
+            if (bestMatchedSkill.Skill == null)
             {
                 _log.Info("No skill matched");
                 throw new InvalidOperationException("No skill matched");
             }
+            _log.Debug($"Matched Skill '{bestMatchedSkill.Skill.Name}' with confidence {bestMatchedSkill.Confidence}");
 
-            var actionable = new Actionable()
+            var actionable = new Actionable
             {
                 Skill = bestMatchedSkill.Skill,
                 Confidence = bestMatchedSkill.Confidence,

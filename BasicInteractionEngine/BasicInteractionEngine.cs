@@ -31,20 +31,21 @@ namespace Limitless.BasicInteractionEngine
         /// <summary>
         /// The logger.
         /// </summary>
-        private ILogger _log;
+        private readonly ILogger _log;
         /// <summary>
         /// The basic intent extractor.
         /// </summary>
-        private IntentExtractor _extractor;
+        private readonly IntentExtractor _extractor;
         /// <summary>
         /// The registered skills.
         /// </summary>
-        private Dictionary<string, Skill> _skills;
+        private readonly Dictionary<string, Skill> _skills;
 
         /// <summary>
-        /// Constructor with injected log.
+        /// Creates a new instance of the engine using 
+        /// the supplied <see cref="ILogger"/>.
         /// </summary>
-        /// <param name="log">The logger to use</param>
+        /// <param name="log">The <see cref="ILogger"/> to use</param>
         public BasicInteractionEngine(ILogger log)
         {
             _log = log;
@@ -110,17 +111,17 @@ namespace Limitless.BasicInteractionEngine
         /// </summary>
         public IOData ProcessInput(IOData ioData)
         {
-            if (ioData.MimeLanguage.Mime == MimeType.Text)
+            if (ioData != null && ioData.MimeLanguage.Mime == MimeType.Text)
             {
                 _log.Info($"Processing text input");
 
-                Actionable actionable = null;
+                Actionable actionable;
                 try
                 {
                     actionable = _extractor.Extract(ioData.Data, _skills);
 
                     // TODO: Check if required parameters are included for the matched skill - expand extract
-                    if (actionable.HasMissingParameters())
+                    if (actionable != null && actionable.HasMissingParameters())
                     {
                         var missingParameters = actionable.GetMissingParameters();
                         _log.Warning($"{missingParameters.Count} missing parameter(s) for skill '{actionable.Skill.Name}'");
@@ -151,10 +152,7 @@ namespace Limitless.BasicInteractionEngine
                 // Different mime types
                 return new IOData(new MimeLanguage(MimeType.Text, "en-US"), "What now?");
             }
-            else
-            {
-                throw new NotSupportedException($"The MIME type '{ioData.MimeLanguage.Mime}' is not supported by the BasicInteractionEngine");
-            }
+            throw new NotSupportedException($"The MIME type '{ioData.MimeLanguage.Mime}' is not supported by the BasicInteractionEngine");
         }
 
         /// <summary>
@@ -176,15 +174,11 @@ namespace Limitless.BasicInteractionEngine
         /// Implemented from interface 
         /// <see cref="Limitless.Runtime.Interfaces.IInteractionEngine.DeregisterSkill(string)"/>
         /// </summary>
-        public bool DeregisterSkill(string skillUUID)
+        public bool DeregisterSkill(string skillUuid)
         {
             // Remove the skill then check if it is still in the list
-            _skills.Remove(skillUUID);
-            if (_skills.ContainsKey(skillUUID))
-            {
-                return false;
-            }
-            return true;
+            _skills.Remove(skillUuid);
+            return !_skills.ContainsKey(skillUuid);
         }
 
         /// <summary>
@@ -204,11 +198,7 @@ namespace Limitless.BasicInteractionEngine
         {
             var assembly = GetType().Assembly;
             var attribute = assembly.GetCustomAttribute<AssemblyTitleAttribute>();
-            if (attribute != null)
-            {
-                return attribute.Title;
-            }
-            return "Unknown";
+            return attribute != null ? attribute.Title : "Unknown";
         }
 
         /// <summary>
@@ -219,16 +209,12 @@ namespace Limitless.BasicInteractionEngine
         {
             var assembly = GetType().Assembly;
             var attribute = assembly.GetCustomAttribute<AssemblyCompanyAttribute>();
-            if (attribute != null)
-            {
-                return attribute.Company;
-            }
-            return "Unknown";
+            return attribute != null ? attribute.Company : "Unknown";
         }
 
         /// <summary>
         /// Implemented from interface 
-        /// <see cref="Limitless.Runtime.Interface.IModule.GetVersion"/>
+        /// <see cref="Limitless.Runtime.Interfaces.IModule.GetVersion"/>
         /// </summary>
         public string GetVersion()
         {
@@ -244,11 +230,7 @@ namespace Limitless.BasicInteractionEngine
         {
             var assembly = GetType().Assembly;
             var attribute = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>();
-            if (attribute != null)
-            {
-                return attribute.Description;
-            }
-            return "Unknown";
+            return attribute != null ? attribute.Description : "Unknown";
         }
     }
 }
