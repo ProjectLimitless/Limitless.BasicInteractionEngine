@@ -53,7 +53,7 @@ namespace Limitless.BasicInteractionEngine
             _skills = new Dictionary<string, Skill>();
 
             // TODO: Test
-            var skill = new Skill();
+            var skill = new Skill("myPrivateKey");
             skill.Name = "Builtin Weather Skill";
             skill.Author = "Project Limitless";
             skill.ShortDescription = "A skill to check the weather";
