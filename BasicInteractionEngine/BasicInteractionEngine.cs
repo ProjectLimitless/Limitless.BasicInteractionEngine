@@ -53,7 +53,8 @@ namespace Limitless.BasicInteractionEngine
             _skills = new Dictionary<string, Skill>();
 
             // TODO: Test
-            var skill = new Skill("myPrivateKey");
+            var skill = new Skill();
+            skill.UUID = "weather.builtin.ll.io";
             skill.Name = "Builtin Weather Skill";
             skill.Author = "Project Limitless";
             skill.ShortDescription = "A skill to check the weather";
@@ -65,7 +66,7 @@ namespace Limitless.BasicInteractionEngine
             skill.Binding = SkillExecutorBinding.Network;
             skill.Parameters.Add(new SkillParameter("day", SkillParameterType.DateRange));
             var executor = new NetworkExecutor();
-            executor.Url = "https://www.google.com";
+            executor.Url = "https://www.postoffice.co.za";
             executor.ValidateCertificate = false;
             skill.Executor = executor;
             skill.Help.Phrase = "weather";
