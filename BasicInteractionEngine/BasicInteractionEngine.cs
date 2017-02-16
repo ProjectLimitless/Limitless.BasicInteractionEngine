@@ -71,8 +71,31 @@ namespace Limitless.BasicInteractionEngine
             skill.Executor = executor;
             skill.Help.Phrase = "weather";
             skill.Help.ExamplePhrase = "How's the weather for tomorrow morning";
-            //skill.RequiredParameters.Add(new SkillParameter() { Parameter = "sugar", Type = SkillParameterType.Integer });
-            RegisterSkill(skill);
+            //RegisterSkill(skill);
+
+
+            skill = new Skill();
+            skill.UUID = "sample-coffee";
+            skill.Name = "Coffee Brewer";
+            skill.Author = "Project Limitless";
+            skill.ShortDescription = "A skill to make coffee";
+            skill.Intent = new Intent();
+            skill.Intent.Actions.Add("brew");
+            skill.Intent.Actions.Add("make");
+            skill.Intent.Targets.Add("coffee");
+            skill.Intent.Targets.Add("cuppa");
+            skill.Locations.Add("kitchen");
+            skill.Locations.Add("downstairs");
+            skill.Binding = SkillExecutorBinding.Network;
+            skill.Parameters.Add(new SkillParameter("sugar", SkillParameterType.Integer, true));
+            executor = new NetworkExecutor();
+            executor.Url = "https://www.postoffice.co.za";
+            executor.ValidateCertificate = false;
+            skill.Executor = executor;
+            skill.Help.Phrase = "make coffee";
+            skill.Help.ExamplePhrase = "Make me a cup of coffee";
+            //RegisterSkill(skill);
+
         }
 
         /// <summary>
@@ -146,12 +169,9 @@ namespace Limitless.BasicInteractionEngine
                 }
 
                 _log.Trace($"Executing using {actionable.Skill.Binding} executor");
-                // TODO: matchedSkill needs to be sent to the executor, with the metadata
-                ((ISkillExecutor)actionable.Skill.Executor).Execute(actionable);
-
-
-                // Different mime types
-                return new IOData(new MimeLanguage(MimeType.Text, "en-US"), "What now?");
+                var actionableResult = ((ISkillExecutor)actionable.Skill.Executor).Execute(actionable);
+                
+                return new IOData(new MimeLanguage(actionableResult.ContentType, actionableResult.ContentLanguage), actionableResult.Data);
             }
             throw new NotSupportedException($"The MIME type '{ioData.MimeLanguage.Mime}' is not supported by the BasicInteractionEngine");
         }
@@ -177,7 +197,7 @@ namespace Limitless.BasicInteractionEngine
         /// </summary>
         public bool DeregisterSkill(string skillUuid)
         {
-            // Remove the skill then check if it is still in the list
+			// Remove the skill then check if it is still in the list
             _skills.Remove(skillUuid);
             return !_skills.ContainsKey(skillUuid);
         }

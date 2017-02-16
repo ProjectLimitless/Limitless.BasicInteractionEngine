@@ -102,8 +102,9 @@ namespace Limitless.BasicInteractionEngine
                         bestMatchedSkill.Skill = skill;
                         bestMatchedSkill.Confidence = matchConfidence;
                     }
-                    else if (matchConfidence == bestMatchedSkill.Confidence)
+                    else if (matchConfidence == bestMatchedSkill.Confidence && matchConfidence > 0)
                     {
+                        // TODO: Handle multiple matches better
                         throw new NotSupportedException("Multiple skills matched");
                     }
                 }
@@ -127,15 +128,18 @@ namespace Limitless.BasicInteractionEngine
                 Confidence = bestMatchedSkill.Confidence,
             };
 
-            List<SkillParameter> dateParams = actionable.GetParametersByType(SkillParameterType.DateRange);
-            if (dateParams.Count > 0)
+            // TODO: Improve the detection of required parameters
+            // TODO: Add detection of location parameters 
+            var dateParams = actionable.GetParametersByType(SkillParameterType.DateRange);
+            if (dateParams.Count <= 0)
             {
-                if (timeSpan != null)
-                {
-                    actionable.SkillParameters.Add(dateParams.First().Parameter, dateRange);
-                }
+                return actionable;
             }
-            
+
+            if (timeSpan != null)
+            {
+                actionable.SkillParameters.Add(dateParams.First().Parameter, dateRange);
+            }
             return actionable;
         }
     }
