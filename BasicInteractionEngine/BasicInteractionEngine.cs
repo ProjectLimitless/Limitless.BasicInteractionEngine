@@ -64,7 +64,7 @@ namespace Limitless.BasicInteractionEngine
             skill.Intent.Targets.Add("weather");
             skill.Intent.Targets.Add("forecast");
             skill.Binding = SkillExecutorBinding.Network;
-            skill.Parameters.Add(new SkillParameter("day", SkillParameterType.DateRange));
+            skill.Parameters.Add(new SkillParameter("day", SkillParameterClass.DateRange));
             var executor = new NetworkExecutor();
             executor.Url = "https://www.postoffice.co.za";
             executor.ValidateCertificate = false;
@@ -87,7 +87,7 @@ namespace Limitless.BasicInteractionEngine
             skill.Locations.Add("kitchen");
             skill.Locations.Add("downstairs");
             skill.Binding = SkillExecutorBinding.Network;
-            skill.Parameters.Add(new SkillParameter("sugar", SkillParameterType.Integer, true));
+            skill.Parameters.Add(new SkillParameter("sugar", SkillParameterClass.Quantity, true));
             executor = new NetworkExecutor();
             executor.Url = "https://www.postoffice.co.za";
             executor.ValidateCertificate = false;

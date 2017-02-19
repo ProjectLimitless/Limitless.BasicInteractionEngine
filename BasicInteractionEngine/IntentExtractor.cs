@@ -94,6 +94,7 @@ namespace Limitless.BasicInteractionEngine
                 var intent = skill.Intent;
                 int matchConfidence = intent.Actions.Count(input.Contains);
                 matchConfidence += intent.Targets.Count(input.Contains);
+                matchConfidence += skill.Locations.Count(input.Contains);
                 
                 if (matchConfidence <= 0 || bestMatchedSkill.Skill != null)
                 {
@@ -101,6 +102,7 @@ namespace Limitless.BasicInteractionEngine
                     {
                         bestMatchedSkill.Skill = skill;
                         bestMatchedSkill.Confidence = matchConfidence;
+                        bestMatchedSkill.Location = skill.Locations.First(input.Contains);
                     }
                     else if (matchConfidence == bestMatchedSkill.Confidence && matchConfidence > 0)
                     {
@@ -112,6 +114,7 @@ namespace Limitless.BasicInteractionEngine
                 {
                     bestMatchedSkill.Skill = skill;
                     bestMatchedSkill.Confidence = matchConfidence;
+                    bestMatchedSkill.Location = skill.Locations.FirstOrDefault(input.Contains);
                 }
             }
             
@@ -122,15 +125,19 @@ namespace Limitless.BasicInteractionEngine
             }
             _log.Debug($"Matched Skill '{bestMatchedSkill.Skill.Name}' with confidence {bestMatchedSkill.Confidence}");
 
+            // TODO: if location is needed ask for it
+            // TODO: if no location is matched, but locations exist - pick default?
+
             var actionable = new Actionable
             {
                 Skill = bestMatchedSkill.Skill,
                 Confidence = bestMatchedSkill.Confidence,
+                Location = bestMatchedSkill.Location
             };
 
             // TODO: Improve the detection of required parameters
             // TODO: Add detection of location parameters 
-            var dateParams = actionable.GetParametersByType(SkillParameterType.DateRange);
+            var dateParams = actionable.GetParametersByType(SkillParameterClass.DateRange);
             if (dateParams.Count <= 0)
             {
                 return actionable;
