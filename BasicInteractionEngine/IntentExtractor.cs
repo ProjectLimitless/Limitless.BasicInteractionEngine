@@ -125,7 +125,6 @@ namespace Limitless.BasicInteractionEngine
             }
             _log.Debug($"Matched Skill '{bestMatchedSkill.Skill.Name}' with confidence {bestMatchedSkill.Confidence}");
 
-            // TODO: if location is needed ask for it
             // TODO: if no location is matched, but locations exist - pick default?
 
             var actionable = new Actionable
@@ -135,8 +134,20 @@ namespace Limitless.BasicInteractionEngine
                 Location = bestMatchedSkill.Location
             };
 
+            if (actionable.Skill.Locations.Count > 0 && actionable.Location == null)
+            {
+                if (actionable.Skill.Locations.Count > 1)
+                {
+                    // Ask which one
+                    actionable.AddDynamicParameter(new SkillParameter("location", SkillParameterClass.Location));
+                }
+                else
+                {
+                    actionable.Location = actionable.Skill.Locations.First();
+                }
+            }
+
             // TODO: Improve the detection of required parameters
-            // TODO: Add detection of location parameters 
             var dateParams = actionable.GetParametersByType(SkillParameterClass.DateRange);
             if (dateParams.Count <= 0)
             {

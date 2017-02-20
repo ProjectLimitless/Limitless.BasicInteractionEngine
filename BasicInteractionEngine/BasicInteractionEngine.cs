@@ -15,7 +15,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-
+using System.Security.Cryptography.X509Certificates;
+using Humanizer;
 using Limitless.Runtime.Types;
 using Limitless.Runtime.Interfaces;
 using Limitless.Runtime.Interactions;
@@ -71,7 +72,7 @@ namespace Limitless.BasicInteractionEngine
             skill.Executor = executor;
             skill.Help.Phrase = "weather";
             skill.Help.ExamplePhrase = "How's the weather for tomorrow morning";
-            //RegisterSkill(skill);
+            RegisterSkill(skill);
 
 
             skill = new Skill();
@@ -94,7 +95,7 @@ namespace Limitless.BasicInteractionEngine
             skill.Executor = executor;
             skill.Help.Phrase = "make coffee";
             skill.Help.ExamplePhrase = "Make me a cup of coffee";
-            //RegisterSkill(skill);
+            RegisterSkill(skill);
 
         }
 
@@ -151,6 +152,24 @@ namespace Limitless.BasicInteractionEngine
                         _log.Warning($"{missingParameters.Count} missing parameter(s) for skill '{actionable.Skill.Name}'");
 
                         // TODO: Engine should ask for missing parameter
+                        foreach (var missingParameter in missingParameters)
+                        {
+                            switch (missingParameter.Type)
+                            {
+                                case SkillParameterClass.Location:
+                                    return new IOData(new MimeLanguage(MimeType.Text, "en"),
+                                        $"Where would you like that, {actionable.Skill.Locations.Humanize("or")}?");
+
+                                case SkillParameterClass.DateRange:
+                                    return new IOData(new MimeLanguage(MimeType.Text, "en"),
+                                        $"For when whould that be?");
+                                default:
+                                    return new IOData(new MimeLanguage(MimeType.Text, "en"), 
+                                        $"I'm missing {missingParameters.Count} or more parameters, named " +
+                                        $"{missingParameters.Select(x => x.Parameter).Humanize("and")}");
+                            }
+                        }
+
                         return new IOData(new MimeLanguage(MimeType.Text, "en-US"), $"I'm missing {missingParameters.Count} parameters");
                     }
 
