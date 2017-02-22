@@ -15,8 +15,9 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
+
 using Humanizer;
+
 using Limitless.Runtime.Types;
 using Limitless.Runtime.Interfaces;
 using Limitless.Runtime.Interactions;
@@ -89,6 +90,7 @@ namespace Limitless.BasicInteractionEngine
             skill.Locations.Add("downstairs");
             skill.Binding = SkillExecutorBinding.Network;
             skill.Parameters.Add(new SkillParameter("sugar", SkillParameterClass.Quantity, true));
+            skill.Parameters.Add(new SkillParameter("day", SkillParameterClass.DateRange, true));
             executor = new NetworkExecutor();
             executor.Url = "https://www.postoffice.co.za";
             executor.ValidateCertificate = false;
@@ -148,29 +150,42 @@ namespace Limitless.BasicInteractionEngine
                     // TODO: Check if required parameters are included for the matched skill - expand extract
                     if (actionable != null && actionable.HasMissingParameters())
                     {
-                        var missingParameters = actionable.GetMissingParameters();
-                        _log.Warning($"{missingParameters.Count} missing parameter(s) for skill '{actionable.Skill.Name}'");
+                        var queryParameters = actionable.GetQueriedParameters();
+                        queryParameters.AddRange(actionable.GetMissingParameters());
 
-                        // TODO: Engine should ask for missing parameter
-                        foreach (var missingParameter in missingParameters)
+                        _log.Warning($"{queryParameters.Count} parameter(s) for skill '{actionable.Skill.Name}' need to be queried");
+
+                        /*
+                            This is a very basic engine and does not implement conversation sessions.
+                            If you would like to have conversation sessions, use the Limitless cloud engine.
+                        */ 
+                        // TODO: I need to use this as temporary parameters
+                        foreach (var queryParameter in queryParameters)
                         {
-                            switch (missingParameter.Type)
+                            switch (queryParameter.ClassType)
                             {
                                 case SkillParameterClass.Location:
                                     return new IOData(new MimeLanguage(MimeType.Text, "en"),
-                                        $"Where would you like that, {actionable.Skill.Locations.Humanize("or")}?");
+                                        $"You need to specify where you would like that in your request, {actionable.Skill.Locations.Humanize("or")}.");
 
                                 case SkillParameterClass.DateRange:
                                     return new IOData(new MimeLanguage(MimeType.Text, "en"),
-                                        $"For when whould that be?");
+                                        "You need to specify for when this would be in your request.");
+
+                                case SkillParameterClass.Quantity:
+                                    return new IOData(new MimeLanguage(MimeType.Text, "en"),
+                                        "You need to specify the amount of " +
+                                        $"{actionable.Skill.Parameters.Where(x => x.ClassType == SkillParameterClass.Quantity).Select(x => x.Parameter).Humanize("and")}" +
+                                        " in your request.");
+
                                 default:
                                     return new IOData(new MimeLanguage(MimeType.Text, "en"), 
-                                        $"I'm missing {missingParameters.Count} or more parameters, named " +
-                                        $"{missingParameters.Select(x => x.Parameter).Humanize("and")}");
+                                        $"I'm missing {queryParameters.Count} or more parameters, named " +
+                                        $"{queryParameters.Select(x => x.Parameter).Humanize("and")}");
                             }
                         }
 
-                        return new IOData(new MimeLanguage(MimeType.Text, "en-US"), $"I'm missing {missingParameters.Count} parameters");
+                        return new IOData(new MimeLanguage(MimeType.Text, "en-US"), $"I'm missing {queryParameters.Count} parameters");
                     }
 
                 }

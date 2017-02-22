@@ -17,6 +17,7 @@ using System.Dynamic;
 using System.Collections.Generic;
 
 using Chronic;
+using Humanizer;
 
 using Limitless.Runtime.Enums;
 using Limitless.Runtime.Types;
@@ -59,6 +60,7 @@ namespace Limitless.BasicInteractionEngine
         /// <returns>The matched skill with metadata</returns>
         public Actionable Extract(string input, Dictionary<string, Skill> skills)
         {
+            input = input.ToLowerInvariant();
             _log.Trace($"Extracting intent from '{input}'");
 
             // Extract the dates.
@@ -124,9 +126,7 @@ namespace Limitless.BasicInteractionEngine
                 throw new InvalidOperationException("No skill matched");
             }
             _log.Debug($"Matched Skill '{bestMatchedSkill.Skill.Name}' with confidence {bestMatchedSkill.Confidence}");
-
-            // TODO: if no location is matched, but locations exist - pick default?
-
+            
             var actionable = new Actionable
             {
                 Skill = bestMatchedSkill.Skill,
@@ -139,7 +139,7 @@ namespace Limitless.BasicInteractionEngine
                 if (actionable.Skill.Locations.Count > 1)
                 {
                     // Ask which one
-                    actionable.AddDynamicParameter(new SkillParameter("location", SkillParameterClass.Location));
+                    actionable.AddQueryParameter(new SkillParameter("location", SkillParameterClass.Location));
                 }
                 else
                 {
@@ -148,17 +148,98 @@ namespace Limitless.BasicInteractionEngine
             }
 
             // TODO: Improve the detection of required parameters
-            var dateParams = actionable.GetParametersByType(SkillParameterClass.DateRange);
-            if (dateParams.Count <= 0)
+            var lookupParams = actionable.GetParametersByClass(SkillParameterClass.DateRange);
+            if (lookupParams.Count > 0)
             {
-                return actionable;
+                if (timeSpan != null)
+                {
+                    actionable.SkillParameters.Add(lookupParams.First().Parameter, dateRange);
+                }
             }
 
-            if (timeSpan != null)
+            lookupParams = actionable.GetParametersByClass(SkillParameterClass.Quantity);
+            foreach (SkillParameter parameter in lookupParams)
             {
-                actionable.SkillParameters.Add(dateParams.First().Parameter, dateRange);
+
+                // Find the parameter in the input
+                if (input.Contains(parameter.Parameter))
+                {
+                    // Then find the closest number before the parameter for quantity
+                    var extractedValue = FindClosestQuantity(input, parameter.Parameter, "before");
+                    _log.Debug($"Extracted value of {extractedValue} for parameter '{parameter.Parameter}'");
+                    actionable.SkillParameters.Add(parameter.Parameter, extractedValue);
+
+                }
+                else
+                {
+                    string checkParameter = parameter.Parameter;
+                    // if parameter not found, check plural or singular form
+                    if (checkParameter == checkParameter.Pluralize(false))
+                    {
+                        // Parameter is currently a plural, so singularize
+                        checkParameter = checkParameter.Singularize();
+                    }
+                    else
+                    {
+                        // Parameter is currently singular, so pluralize
+                        checkParameter.Pluralize();
+                    }
+                    _log.Trace($"Plural/Singular created of parameter '{parameter.Parameter}'. Matching '{checkParameter}'");
+
+                    // Then find the closest number before the parameter for quantity
+                    var extractedValue = FindClosestQuantity(input, checkParameter, "before");
+                    _log.Debug($"Extracted value of {extractedValue} for parameter '{parameter.Parameter}'");
+                    actionable.SkillParameters.Add(parameter.Parameter, extractedValue);
+                }
             }
+
             return actionable;
+        }
+        
+        /// <summary>
+        /// Finds the closest integer/double value to the given needle
+        /// in haystack. The direction determines if the look should
+        /// look only before, after or in any direction.
+        /// </summary>
+        /// <param name="haystack">The input to check for needle</param>
+        /// <param name="needle">The word to search for</param>
+        /// <param name="direction">The direction to search in</param>
+        /// <returns>The value of the closest quantity</returns>
+        public double FindClosestQuantity(string haystack, string needle, string direction)
+        {
+            double closestQuantity = 0.00;
+            switch (direction)
+            {
+                case "before":
+                    string before = haystack.Substring(0, haystack.IndexOf(needle, StringComparison.InvariantCultureIgnoreCase));
+                    _log.Trace($"Matching for before direction: '{before}'");
+                    //before.Split(' ').Reverse().ForEach(x => double.TryParse(x, out closestQuantity));
+                    foreach (string word in before.Split().Reverse())
+                    {
+                        if (double.TryParse(word, out closestQuantity))
+                        {
+                            break;
+                        }
+                    }
+                    break;
+                case "after":
+                    string after = haystack.Substring(haystack.IndexOf(needle, StringComparison.InvariantCultureIgnoreCase));
+                    _log.Trace($"Matching for after direction: '{after}'");
+                    //after.Split(' ').ForEach(x => double.TryParse(x, out closestQuantity));
+                    foreach (string word in after.Split())
+                    {
+                        if (double.TryParse(word, out closestQuantity))
+                        {
+                            break;
+                        }
+                    }
+                    break;
+                case "any":
+                    break;
+                default:
+                    break;
+            }
+            return closestQuantity;
         }
     }
 }
