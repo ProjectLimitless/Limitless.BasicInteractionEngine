@@ -99,6 +99,26 @@ namespace Limitless.BasicInteractionEngine
             skill.Help.ExamplePhrase = "Make me a cup of coffee";
             RegisterSkill(skill);
 
+            skill = new Skill();
+            skill.UUID = "sample-tv";
+            skill.Name = "TV";
+            skill.Author = "Project Limitless";
+            skill.ShortDescription = "A skill to control the TV";
+            skill.Intent = new Intent();
+            skill.Intent.Actions.Add("turn on");
+            skill.Intent.Actions.Add("turn off");
+            skill.Intent.Targets.Add("tv");
+            skill.Intent.Targets.Add("television");
+            skill.Binding = SkillExecutorBinding.Network;
+            skill.Parameters.Add(new SkillParameter("channel", SkillParameterClass.IntegerValue, false));
+            executor = new NetworkExecutor();
+            executor.Url = "https://www.postoffice.co.za";
+            executor.ValidateCertificate = false;
+            skill.Executor = executor;
+            skill.Help.Phrase = "turn on the tv";
+            skill.Help.ExamplePhrase = "Turn on the tv and switch to channel 110";
+            RegisterSkill(skill);
+
         }
 
         /// <summary>
@@ -150,8 +170,7 @@ namespace Limitless.BasicInteractionEngine
                     // TODO: Check if required parameters are included for the matched skill - expand extract
                     if (actionable != null && actionable.HasMissingParameters())
                     {
-                        var queryParameters = actionable.GetQueriedParameters();
-                        queryParameters.AddRange(actionable.GetMissingParameters());
+                        var queryParameters = actionable.GetMissingParameters();
 
                         _log.Warning($"{queryParameters.Count} parameter(s) for skill '{actionable.Skill.Name}' need to be queried");
 
@@ -176,6 +195,12 @@ namespace Limitless.BasicInteractionEngine
                                     return new IOData(new MimeLanguage(MimeType.Text, "en"),
                                         "You need to specify the amount of " +
                                         $"{actionable.Skill.Parameters.Where(x => x.ClassType == SkillParameterClass.Quantity).Select(x => x.Parameter).Humanize("and")}" +
+                                        " in your request.");
+
+                                case SkillParameterClass.IntegerValue:
+                                    return new IOData(new MimeLanguage(MimeType.Text, "en"),
+                                        "You need to specify the number for " +
+                                        $"{actionable.Skill.Parameters.Where(x => x.ClassType == SkillParameterClass.IntegerValue).Select(x => x.Parameter).Humanize("and")}" +
                                         " in your request.");
 
                                 default:

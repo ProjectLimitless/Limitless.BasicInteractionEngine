@@ -146,8 +146,7 @@ namespace Limitless.BasicInteractionEngine
                     actionable.Location = actionable.Skill.Locations.First();
                 }
             }
-
-            // TODO: Improve the detection of required parameters
+            
             var lookupParams = actionable.GetParametersByClass(SkillParameterClass.DateRange);
             if (lookupParams.Count > 0)
             {
@@ -156,18 +155,38 @@ namespace Limitless.BasicInteractionEngine
                     actionable.SkillParameters.Add(lookupParams.First().Parameter, dateRange);
                 }
             }
-
+            
             lookupParams = actionable.GetParametersByClass(SkillParameterClass.Quantity);
-            foreach (SkillParameter parameter in lookupParams)
-            {
+            actionable.SkillParameters =
+                actionable.SkillParameters.Concat(ExtractParameters(input, lookupParams, "before")).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            
+            lookupParams = actionable.GetParametersByClass(SkillParameterClass.IntegerValue);
+            actionable.SkillParameters =
+                actionable.SkillParameters.Concat(ExtractParameters(input, lookupParams, "after")).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
+
+            return actionable;
+        }
+
+        /// <summary>
+        /// Extract the parameters and their values from input.
+        /// </summary>
+        /// <param name="input">The input to extract from</param>
+        /// <param name="parameters">The parameters to extract</param>
+        /// <param name="matchDirection">The direction to search for in input</param> 
+        /// <returns>The collection of extracted parameters and their values</returns>
+        private Dictionary<string, object> ExtractParameters(string input, List<SkillParameter> parameters, string matchDirection)
+        {
+            var extractedParameters = new Dictionary<string, object>();
+            foreach (SkillParameter parameter in parameters)
+            {
                 // Find the parameter in the input
                 if (input.Contains(parameter.Parameter))
                 {
                     // Then find the closest number before the parameter for quantity
-                    var extractedValue = FindClosestQuantity(input, parameter.Parameter, "before");
+                    double extractedValue = FindClosestQuantity(input, parameter.Parameter, matchDirection);
                     _log.Debug($"Extracted value of {extractedValue} for parameter '{parameter.Parameter}'");
-                    actionable.SkillParameters.Add(parameter.Parameter, extractedValue);
+                    extractedParameters.Add(parameter.Parameter, extractedValue);
 
                 }
                 else
@@ -186,14 +205,16 @@ namespace Limitless.BasicInteractionEngine
                     }
                     _log.Trace($"Plural/Singular created of parameter '{parameter.Parameter}'. Matching '{checkParameter}'");
 
+                    if (!input.Contains(parameter.Parameter))
+                        continue;
+
                     // Then find the closest number before the parameter for quantity
-                    var extractedValue = FindClosestQuantity(input, checkParameter, "before");
+                    double extractedValue = FindClosestQuantity(input, checkParameter, matchDirection);
                     _log.Debug($"Extracted value of {extractedValue} for parameter '{parameter.Parameter}'");
-                    actionable.SkillParameters.Add(parameter.Parameter, extractedValue);
+                    extractedParameters.Add(parameter.Parameter, extractedValue);
                 }
             }
-
-            return actionable;
+            return extractedParameters;
         }
         
         /// <summary>
@@ -205,7 +226,7 @@ namespace Limitless.BasicInteractionEngine
         /// <param name="needle">The word to search for</param>
         /// <param name="direction">The direction to search in</param>
         /// <returns>The value of the closest quantity</returns>
-        public double FindClosestQuantity(string haystack, string needle, string direction)
+        private double FindClosestQuantity(string haystack, string needle, string direction)
         {
             double closestQuantity = 0.00;
             switch (direction)
@@ -213,7 +234,6 @@ namespace Limitless.BasicInteractionEngine
                 case "before":
                     string before = haystack.Substring(0, haystack.IndexOf(needle, StringComparison.InvariantCultureIgnoreCase));
                     _log.Trace($"Matching for before direction: '{before}'");
-                    //before.Split(' ').Reverse().ForEach(x => double.TryParse(x, out closestQuantity));
                     foreach (string word in before.Split().Reverse())
                     {
                         if (double.TryParse(word, out closestQuantity))
@@ -225,7 +245,6 @@ namespace Limitless.BasicInteractionEngine
                 case "after":
                     string after = haystack.Substring(haystack.IndexOf(needle, StringComparison.InvariantCultureIgnoreCase));
                     _log.Trace($"Matching for after direction: '{after}'");
-                    //after.Split(' ').ForEach(x => double.TryParse(x, out closestQuantity));
                     foreach (string word in after.Split())
                     {
                         if (double.TryParse(word, out closestQuantity))
@@ -235,8 +254,10 @@ namespace Limitless.BasicInteractionEngine
                     }
                     break;
                 case "any":
+                    throw new NotImplementedException();
                     break;
                 default:
+                    throw new NotImplementedException();
                     break;
             }
             return closestQuantity;
