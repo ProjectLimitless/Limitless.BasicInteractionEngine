@@ -60,6 +60,7 @@ namespace Limitless.BasicInteractionEngine
             skill.Name = "Builtin Weather Skill";
             skill.Author = "Project Limitless";
             skill.ShortDescription = "A skill to check the weather";
+            skill.Class = "lookup/weather";
             skill.Intent = new Intent();
             skill.Intent.Actions.Add("what");
             skill.Intent.Actions.Add("how");
@@ -81,13 +82,14 @@ namespace Limitless.BasicInteractionEngine
             skill.Name = "Coffee Brewer";
             skill.Author = "Project Limitless";
             skill.ShortDescription = "A skill to make coffee";
+            skill.Class = "actions/coffee";
             skill.Intent = new Intent();
             skill.Intent.Actions.Add("brew");
             skill.Intent.Actions.Add("make");
             skill.Intent.Targets.Add("coffee");
             skill.Intent.Targets.Add("cuppa");
-            skill.Locations.Add("kitchen");
-            skill.Locations.Add("downstairs");
+            skill.InstalledLocations.Add("kitchen");
+            skill.InstalledLocations.Add("downstairs");
             skill.Binding = SkillExecutorBinding.Network;
             skill.Parameters.Add(new SkillParameter("sugar", SkillParameterClass.Quantity, true));
             skill.Parameters.Add(new SkillParameter("day", SkillParameterClass.DateRange, true));
@@ -104,6 +106,7 @@ namespace Limitless.BasicInteractionEngine
             skill.Name = "TV";
             skill.Author = "Project Limitless";
             skill.ShortDescription = "A skill to control the TV";
+            skill.Class = "actions/tv";
             skill.Intent = new Intent();
             skill.Intent.Actions.Add("turn on");
             skill.Intent.Actions.Add("turn off");
@@ -183,10 +186,10 @@ namespace Limitless.BasicInteractionEngine
                         {
                             switch (queryParameter.ClassType)
                             {
-                                case SkillParameterClass.Location:
+                                case SkillParameterClass.InstalledLocation:
                                     return new IOData(new MimeLanguage(MimeType.Text, "en"),
-                                        $"You need to specify where you would like that in your request, {actionable.Skill.Locations.Humanize("or")}.");
-
+                                        $"You need to specify where you would like that in your request, {actionable.Skill.InstalledLocations.Humanize("or")}.");
+                                
                                 case SkillParameterClass.DateRange:
                                     return new IOData(new MimeLanguage(MimeType.Text, "en"),
                                         "You need to specify for when this would be in your request.");

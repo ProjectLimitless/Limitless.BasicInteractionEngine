@@ -96,7 +96,7 @@ namespace Limitless.BasicInteractionEngine
                 var intent = skill.Intent;
                 int matchConfidence = intent.Actions.Count(input.Contains);
                 matchConfidence += intent.Targets.Count(input.Contains);
-                matchConfidence += skill.Locations.Count(input.Contains);
+                matchConfidence += skill.InstalledLocations.Count(input.Contains);
                 
                 if (matchConfidence <= 0 || bestMatchedSkill.Skill != null)
                 {
@@ -104,7 +104,7 @@ namespace Limitless.BasicInteractionEngine
                     {
                         bestMatchedSkill.Skill = skill;
                         bestMatchedSkill.Confidence = matchConfidence;
-                        bestMatchedSkill.Location = skill.Locations.First(input.Contains);
+                        bestMatchedSkill.Location = skill.InstalledLocations.First(input.Contains);
                     }
                     else if (matchConfidence == bestMatchedSkill.Confidence && matchConfidence > 0)
                     {
@@ -116,7 +116,7 @@ namespace Limitless.BasicInteractionEngine
                 {
                     bestMatchedSkill.Skill = skill;
                     bestMatchedSkill.Confidence = matchConfidence;
-                    bestMatchedSkill.Location = skill.Locations.FirstOrDefault(input.Contains);
+                    bestMatchedSkill.Location = skill.InstalledLocations.FirstOrDefault(input.Contains);
                 }
             }
             
@@ -133,17 +133,16 @@ namespace Limitless.BasicInteractionEngine
                 Confidence = bestMatchedSkill.Confidence,
                 Location = bestMatchedSkill.Location
             };
-
-            if (actionable.Skill.Locations.Count > 0 && actionable.Location == null)
+            
+            if (actionable.Skill.InstalledLocations.Count > 0 && actionable.Location == null)
             {
-                if (actionable.Skill.Locations.Count > 1)
+                if (actionable.Skill.InstalledLocations.Count > 1)
                 {
-                    // Ask which one
-                    actionable.AddQueryParameter(new SkillParameter("location", SkillParameterClass.Location));
+                    actionable.AddQueryParameter(new SkillParameter("installed location", SkillParameterClass.InstalledLocation));
                 }
                 else
                 {
-                    actionable.Location = actionable.Skill.Locations.First();
+                    actionable.Location = actionable.Skill.InstalledLocations.First();
                 }
             }
             
